@@ -1,7 +1,14 @@
 const express = require("express");
+const morgan = require('morgan');
 const app = express();
 const port = 3001;
 app.use(express.json());
+
+morgan.token('data', (req) => {
+    return JSON.stringify(req.body);
+});
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'));
 
 let data = [
   {
@@ -48,7 +55,6 @@ app.get("/api/persons/:id", (req, res) => {
 
 app.post("/api/persons", (req, res) => {
   let person = req.body;
-    console.log(person.content);
   if (!person.name) {
     res.status(400).json({
       error: "name missing",
