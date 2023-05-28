@@ -46,6 +46,15 @@ app.get('/api/persons/:id', (req, res) => {
     }
 });
 
+app.post('/api/persons', (req, res) => {
+    let person = req.body;
+
+    person.id = Math.floor(Math.random() * (99999 - 10000 + 1) + 10000);
+    data = data.concat(person);
+
+    res.json(person);
+});
+
 app.delete('/api/persons/:id', (req, res) => {
     let id = Number(req.params.id);
     data = data.filter(p => p.id !== id);
