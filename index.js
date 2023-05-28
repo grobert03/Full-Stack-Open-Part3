@@ -44,6 +44,12 @@ app.get('/api/persons/:id', (req, res) => {
     } else {
         res.status(404).send('<h1>No person found!</h1>');
     }
+});
+
+app.delete('/api/persons/:id', (req, res) => {
+    let id = Number(req.params.id);
+    data = data.filter(p => p.id !== id);
+    res.status(204).end();
 })
 
 app.listen(port, () => {
