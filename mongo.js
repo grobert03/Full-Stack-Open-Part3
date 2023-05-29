@@ -9,7 +9,6 @@ const password = process.argv[2];
 const name = process.argv[3];
 const phone = process.argv[4];
 
-const url = `mongodb+srv://robert:${password}@cluster0.7lxfpr9.mongodb.net/Persons?retryWrites=true&w=majority`;
 
 mongoose.set("strictQuery", false);
 mongoose.connect(url);

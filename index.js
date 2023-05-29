@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require("express");
 const morgan = require('morgan');
 const cors = require('cors');
 const app = express();
+const Person = require('./models/person');
 const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
@@ -13,31 +15,11 @@ morgan.token('data', (req) => {
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'));
 
-let data = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
 
 app.get("/api/persons", (req, res) => {
-  res.send(data);
+  Person.find({}).then(person => {
+    res.json(person);
+  })
 });
 
 app.get("/info", (req, res) => {
@@ -63,17 +45,21 @@ app.post("/api/persons", (req, res) => {
       error: "name missing",
     });
   } else {
-    if (data.find((p) => p.id === person.id)) {
-      res.status(400).json({
-        error: "person already exists",
+    // if (data.find((p) => p.id === person.id)) {
+    //   res.status(400).json({
+    //     error: "person already exists",
+    //   });
+    // } else {
+      const personToAdd = new Person({
+        name: person.name,
+        number: person.number
       });
-    } else {
-      person.id = Math.floor(Math.random() * (99999 - 10000 + 1) + 10000);
-      data = data.concat(person);
-
-      res.status(201).json(person);
+      
+      personToAdd.save().then(savedPerson => {
+        res.json(savedPerson);
+      });
     }
-  }
+  // }
 });
 
 app.delete("/api/persons/:id", (req, res) => {
