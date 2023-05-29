@@ -6,8 +6,8 @@ const app = express();
 const Person = require("./models/person");
 const port = process.env.PORT || 3001;
 app.use(cors());
-app.use(express.json());
 app.use(express.static("build"));
+app.use(express.json());
 
 morgan.token("data", (req) => {
   return JSON.stringify(req.body);
@@ -16,6 +16,8 @@ morgan.token("data", (req) => {
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :data")
 );
+
+
 
 app.get("/api/persons", (req, res) => {
   Person.find({}).then((person) => {
@@ -29,14 +31,16 @@ app.get("/info", (req, res) => {
   res.send(`<p>Phonebook has info for ${length} people</p><p>${date}</p>`);
 });
 
-app.get("/api/persons/:id", (req, res) => {
-  let id = Number(req.params.id);
-  let person = data.find((p) => p.id === id);
-  if (person) {
-    res.send(person);
-  } else {
-    res.status(404).send("<h1>No person found!</h1>");
-  }
+app.get("/api/persons/:id", (req, res, next) => {
+  Person.findById(req.params.id)
+    .then((person) => {
+      if (person) {
+        res.json(person);
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (req, res) => {
@@ -63,14 +67,28 @@ app.post("/api/persons", (req, res) => {
   // }
 });
 
-app.delete("/api/persons/:id", (req, res) => {
+app.delete("/api/persons/:id", (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
     .then((result) => {
       res.status(204).end();
     })
-    .catch((error) => {console.log(error)});
+    .catch((error) => {
+      next(error);
+    });
 });
 
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);
 });
+
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
