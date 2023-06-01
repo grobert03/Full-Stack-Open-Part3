@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const axios = require("axios");
 const morgan = require("morgan");
 const cors = require("cors");
 const app = express();
@@ -17,8 +18,6 @@ app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :data")
 );
 
-
-
 app.get("/api/persons", (req, res) => {
   Person.find({}).then((person) => {
     res.json(person);
@@ -26,9 +25,8 @@ app.get("/api/persons", (req, res) => {
 });
 
 app.get("/info", (req, res) => {
-  let length = data.length;
-  let date = new Date();
-  res.send(`<p>Phonebook has info for ${length} people</p><p>${date}</p>`);
+  Person.find({}).then((persons) => res.send(`<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`)
+  );
 });
 
 app.get("/api/persons/:id", (req, res, next) => {
@@ -43,28 +41,28 @@ app.get("/api/persons/:id", (req, res, next) => {
     .catch((error) => next(error));
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   let person = req.body;
   if (!person.name) {
     res.status(400).json({
       error: "name missing",
     });
   } else {
-    // if (data.find((p) => p.id === person.id)) {
-    //   res.status(400).json({
-    //     error: "person already exists",
-    //   });
-    // } else {
-    const personToAdd = new Person({
-      name: person.name,
-      number: person.number,
-    });
+      const personToAdd = new Person({
+        name: person.name,
+        number: person.number,
+      });
 
-    personToAdd.save().then((savedPerson) => {
-      res.json(savedPerson);
-    });
+      personToAdd.save().then((savedPerson) => {
+        res.json(savedPerson);
+      });
   }
-  // }
+});
+
+app.put("/api/persons/:id", (req, res, next) => {
+  Person.findByIdAndUpdate(req.params.id, {name: req.body.name, number: req.body.number})
+    .then((result) => res.json({id: req.params.id, name: req.body.name, number: req.body.number}))
+    .catch((error) => next(error));
 });
 
 app.delete("/api/persons/:id", (req, res, next) => {
