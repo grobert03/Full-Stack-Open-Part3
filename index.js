@@ -25,7 +25,12 @@ app.get("/api/persons", (req, res) => {
 });
 
 app.get("/info", (req, res) => {
-  Person.find({}).then((persons) => res.send(`<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`)
+  Person.find({}).then((persons) =>
+    res.send(
+      `<p>Phonebook has info for ${
+        persons.length
+      } people</p><p>${new Date()}</p>`
+    )
   );
 });
 
@@ -48,20 +53,33 @@ app.post("/api/persons", (req, res, next) => {
       error: "name missing",
     });
   } else {
-      const personToAdd = new Person({
-        name: person.name,
-        number: person.number,
-      });
+    const personToAdd = new Person({
+      name: person.name,
+      number: person.number,
+    });
 
-      personToAdd.save().then((savedPerson) => {
+    personToAdd
+      .save()
+      .then((savedPerson) => {
         res.json(savedPerson);
-      }).catch(error => next(error));
+      })
+      .catch((error) => next(error));
   }
 });
 
 app.put("/api/persons/:id", (req, res, next) => {
-  Person.findByIdAndUpdate(req.params.id, {name: req.body.name, number: req.body.number}, {new: true, runValidators: true, context: 'query'})
-    .then((result) => res.json({id: req.params.id, name: req.body.name, number: req.body.number}))
+  Person.findByIdAndUpdate(
+    req.params.id,
+    { name: req.body.name, number: req.body.number },
+    { new: true, runValidators: true, context: "query" }
+  )
+    .then((result) =>
+      res.json({
+        id: req.params.id,
+        name: req.body.name,
+        number: req.body.number,
+      })
+    )
     .catch((error) => next(error));
 });
 
@@ -83,7 +101,7 @@ const errorHandler = (error, request, response, next) => {
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
-    return response.status(400).json({error: error.message});
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);
